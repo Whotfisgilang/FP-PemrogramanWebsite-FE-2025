@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 
 // --- TIPE DATA ---
 interface Item {
@@ -23,6 +24,7 @@ const useSoundEffects = () => {
 
   const getAudioContext = () => {
     if (!audioContextRef.current) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       audioContextRef.current = new (window.AudioContext ||
         (window as any).webkitAudioContext)();
     }
@@ -54,7 +56,7 @@ const useSoundEffects = () => {
 
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + duration);
-    } catch (e) {
+    } catch {
       console.log("Sound not available");
     }
   };
@@ -134,7 +136,8 @@ const FeedbackIcon = ({ type }: { type: "correct" | "wrong" | null }) => {
 const CardStack = ({
   content,
   animState,
-  side,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  side: _side,
 }: {
   content: string;
   animState: string;
@@ -366,11 +369,13 @@ const PairOrNoPairGame = () => {
   }, []);
 
   // 1. FETCH DATA
+  const { gameId } = useParams<{ gameId: string }>();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:4000/api/game/game-type/pair-or-no-pair/start"
+          `${import.meta.env.VITE_API_URL}/api/game/game-type/pair-or-no-pair/${gameId}/play/public`
         );
         const data = await response.json();
 
@@ -391,7 +396,7 @@ const PairOrNoPairGame = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [gameId]);
 
   // 2. SMART SHUFFLE
   const smartShuffle = (
@@ -431,26 +436,6 @@ const PairOrNoPairGame = () => {
     }
 
     return { left: shuffledLeft, right: shuffledRight };
-  };
-
-  // 3. INITIALIZE STACKS
-  const initializeStacks = () => {
-    const leftCards: StackCard[] = items.map((item) => ({
-      id: item.id,
-      content: item.left_content,
-    }));
-
-    const rightCards: StackCard[] = items.map((item) => ({
-      id: item.id,
-      content: item.right_content,
-    }));
-
-    const { left, right } = smartShuffle(leftCards, rightCards, 0);
-    setLeftStack(left);
-    setRightStack(right);
-    setCurrentIndex(0);
-    setCorrectCount(0);
-    setShuffleCount(0);
   };
 
   // 4. START GAME
@@ -663,22 +648,16 @@ const PairOrNoPairGame = () => {
     }
   };
 
-  // 8. TOGGLE PAUSE
-  const togglePause = () => {
-    if (isSoundOn) playClick();
-    setIsPaused(!isPaused);
-  };
-
   // 9. FINISH GAME
   const handleFinish = async () => {
     if (isSoundOn) playWin();
     try {
       await fetch(
-        "http://localhost:4000/api/game/game-type/pair-or-no-pair/play-count",
+        `${import.meta.env.VITE_API_URL}/api/game/play-count`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ game_id: "pair-or-no-pair-game-id" }),
+          body: JSON.stringify({ game_id: gameId }),
         }
       );
     } catch (error) {
