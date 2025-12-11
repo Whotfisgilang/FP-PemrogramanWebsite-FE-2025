@@ -29,5 +29,11 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+ "include": [
+  "src/routes",
+  "src/components",
+  "src/store",
+  "src/providers",
+  "src/pages"
+]
 }

@@ -14,9 +14,10 @@ import CreateAnagram from "./pages/anagram/CreateAnagram";
 import PlayAnagram from "./pages/anagram/PlayAnagram";
 import EditAnagram from "./pages/anagram/EditAnagram";
 
-// 📌 TAMBAHAN 1: Import Komponen Game Pair or No Pair
 import PairOrNoPairGame from "./pages/pair-or-no-pair";
 import CreatePairOrNoPair from "./pages/pair-or-no-pair/create";
+
+import WatchAndMemorizeGame from "./pages/watch-and-memorize/play";
 
 function App() {
   return (
@@ -28,9 +29,16 @@ function App() {
         <Route path="/sandbox" element={<Sandbox />} />
         <Route path="/quiz/play/:id" element={<Quiz />} />
         <Route path="/anagram/play/:id" element={<PlayAnagram />} />
+
         <Route
           path="/pair-or-no-pair/play/:gameId"
           element={<PairOrNoPairGame />}
+        />
+
+        {/* ⭐️ ADD WATCH & MEMORIZE ROUTE */}
+        <Route
+          path="/watch-and-memorize/play/:projectId"
+          element={<WatchAndMemorizeGame />}
         />
 
         <Route element={<ProtectedRoute />}>
