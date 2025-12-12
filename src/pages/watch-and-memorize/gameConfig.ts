@@ -20,10 +20,9 @@ export const TOTAL_TIME_SEC = 60; // total waktu satu game (detik)
 // 🔗 Info game di backend (WAJIB SAMA dengan DB)
 export const GAME_SLUG = "watch-and-memorize";
 
-// TODO: ganti ini dengan id game di tabel `Game` (kolom id) di Neon backend-mu
-// Contoh: "b9f1f7f8-8a20-4e93-98b9-3e8c9b5c1234"
-export const GAME_ID = "REPLACE_WITH_YOUR_GAME_ID";
+// Game template ID dari backend (dari tabel GameTemplates)
+export const GAME_TEMPLATE_ID = "6a7e3503-6faa-4d61-ab14-01b868fd1c70";
 
-// 🌐 Base URL backend WordIT lokal
-// Sesuaikan dengan BASE_URL di .env.development backend (biasanya http://localhost:4000)
-export const API_BASE_URL = "http://localhost:4000/api";
+// 🌐 Base URL backend WordIT
+// Menggunakan environment variable untuk fleksibilitas
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";

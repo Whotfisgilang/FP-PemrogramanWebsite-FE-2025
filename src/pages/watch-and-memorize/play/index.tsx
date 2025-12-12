@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 import Card from "@/components/ui/watch-and-memorize/card";
 import Button from "@/components/ui/watch-and-memorize/button";
@@ -6,16 +7,19 @@ import Progress from "@/components/ui/watch-and-memorize/progress";
 
 import {
   ALL_IMAGES,
-  API_BASE_URL,
-  GAME_ID,
   SHOW_COUNT,
   SHOW_DURATION_MS,
   TOTAL_TIME_SEC,
 } from "@/pages/watch-and-memorize/gameConfig";
 import type { GameImage, GamePhase } from "@/pages/watch-and-memorize/types";
 import { prepareRoundImages } from "@/pages/watch-and-memorize/logic";
+import { updateGamePlayCount } from "@/api/watchAndMemorizeApi";
+import { toast } from "sonner";
 
 const WatchAndMemorizeGame = () => {
+  const { gameId } = useParams<{ gameId: string }>();
+  const navigate = useNavigate();
+  
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [round, setRound] = useState<number>(1);
   const [score, setScore] = useState<number>(0);
@@ -28,8 +32,10 @@ const WatchAndMemorizeGame = () => {
 
   const [correct, setCorrect] = useState<number>(0);
   const [wrong, setWrong] = useState<number>(0);
+  
+  const [gameStartTime, setGameStartTime] = useState<number>(0);
+  const [playCountSent, setPlayCountSent] = useState<boolean>(false);
 
-  // Mulai satu ronde baru
   const startRound = () => {
     const { targets: t, options: o } = prepareRoundImages(
       ALL_IMAGES,
@@ -43,24 +49,23 @@ const WatchAndMemorizeGame = () => {
 
     setPhase("show");
 
-    // Setelah beberapa detik, pindah ke fase pilih
     setTimeout(() => {
       setPhase("select");
     }, SHOW_DURATION_MS);
   };
 
-  // Start game (reset state)
-  const startGame = () => {
+  const startGame = async () => {
     setRound(1);
     setScore(0);
     setTimeLeft(TOTAL_TIME_SEC);
     setIsPaused(false);
+    setGameStartTime(Date.now());
+    
     startRound();
   };
 
-  // Timer
   useEffect(() => {
-    if (phase === "idle" || isPaused) return;
+    if (phase === "idle" || isPaused || phase === "result") return;
 
     const id = window.setInterval(() => {
       setTimeLeft((prev) => prev - 1);
@@ -113,27 +118,40 @@ const WatchAndMemorizeGame = () => {
   };
 
   const togglePause = () => {
-    if (phase === "idle") return;
+    if (phase === "idle" || phase === "result") return;
     setIsPaused((prev) => !prev);
-  };
-
-  const exitGame = async () => {
-    try {
-      if (GAME_ID && API_BASE_URL) {
-        await fetch(`${API_BASE_URL}/game/${GAME_ID}/play-count`, {
-          method: "POST",
-        });
-      }
-    } catch (err) {
-      console.error("Failed to send play-count:", err);
-    } finally {
-      window.location.href = "/";
+    
+    if (!isPaused) {
+      toast.info("Game paused");
+    } else {
+      toast.info("Game resumed");
     }
   };
 
+  const exitGame = async () => {
+    if (gameId && !playCountSent) {
+      try {
+        await updateGamePlayCount(gameId);
+        setPlayCountSent(true);
+        toast.success("Game session recorded!");
+      } catch (error) {
+        console.error("Failed to update play count:", error);
+      }
+    }
+    
+    navigate("/");
+  };
+
+  useEffect(() => {
+    if (phase === "show" && gameId && !playCountSent && gameStartTime > 0) {
+      updateGamePlayCount(gameId)
+        .then(() => setPlayCountSent(true))
+        .catch((error) => console.error("Failed to update play count:", error));
+    }
+  }, [phase, gameId, playCountSent, gameStartTime]);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col items-center py-8">
-      {/* Header */}
       <div className="w-full max-w-4xl flex items-center justify-between px-4 mb-4">
         <div>
           <h1 className="text-2xl font-bold">Watch &amp; Memorize</h1>
@@ -149,16 +167,30 @@ const WatchAndMemorizeGame = () => {
               {timeLeft}s
             </p>
           </div>
-          <Button variant="outline" onClick={togglePause}>
+          
+          <Button 
+            variant="outline" 
+            onClick={togglePause}
+            disabled={phase === "idle" || phase === "result"}
+          >
             {isPaused ? "Resume" : "Pause"}
           </Button>
+          
           <Button variant="destructive" onClick={exitGame}>
             Exit
           </Button>
         </div>
       </div>
 
-      {/* Card utama */}
+      {isPaused && phase !== "idle" && phase !== "result" && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="p-6 text-center">
+            <h2 className="text-xl font-semibold mb-4">Game Paused</h2>
+            <Button onClick={togglePause}>Resume Game</Button>
+          </Card>
+        </div>
+      )}
+
       <Card className="w-full max-w-4xl">
         {phase === "idle" && (
           <div className="flex flex-col items-center gap-4 p-6 text-center">
@@ -215,11 +247,12 @@ const WatchAndMemorizeGame = () => {
                     key={img.id}
                     type="button"
                     onClick={() => toggleSelect(img.id)}
+                    disabled={isPaused}
                     className={`rounded-xl border overflow-hidden transition ${
                       sel
                         ? "border-emerald-400 ring-2 ring-emerald-500"
                         : "border-slate-700 hover:border-slate-500"
-                    }`}
+                    } ${isPaused ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <img
                       src={img.src}
@@ -249,7 +282,9 @@ const WatchAndMemorizeGame = () => {
             </div>
 
             <div className="mt-4 flex gap-3">
-              {timeLeft > 0 && <Button onClick={nextRound}>Next Round</Button>}
+              {timeLeft > 0 && (
+                <Button onClick={nextRound}>Next Round</Button>
+              )}
               <Button variant="outline" onClick={exitGame}>
                 Kembali ke Home
               </Button>
