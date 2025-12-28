@@ -18,6 +18,8 @@ import PairOrNoPairGame from "./pages/pair-or-no-pair";
 import CreatePairOrNoPair from "./pages/pair-or-no-pair/create";
 
 import WatchAndMemorizeGame from "./pages/watch-and-memorize/play";
+import CreateWatchAndMemorize from "./pages/watch-and-memorize/create";
+import EditWatchAndMemorize from "./pages/watch-and-memorize/edit";
 
 function App() {
   return (
@@ -53,6 +55,10 @@ function App() {
           <Route path="/quiz/edit/:id" element={<EditQuiz />} />
           <Route path="/create-anagram" element={<CreateAnagram />} />
           <Route path="/anagram/edit/:id" element={<EditAnagram />} />
+
+          {/* Watch And Memorize Management */}
+          <Route path="/create-watch-and-memorize" element={<CreateWatchAndMemorize />} />
+          <Route path="/watch-and-memorize/edit/:id" element={<EditWatchAndMemorize />} />
         </Route>
       </Routes>
     </>

@@ -12,7 +12,7 @@ export default function Card({
   return (
     <div
       className={
-        "rounded-xl bg-slate-900 border border-slate-700 p-4 shadow-md " +
+        "rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-black/50 " +
         className
       }
       {...props}

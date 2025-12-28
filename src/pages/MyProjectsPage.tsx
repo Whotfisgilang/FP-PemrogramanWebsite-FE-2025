@@ -150,7 +150,9 @@ export default function MyProjectsPage() {
               <img
                 src={
                   project.thumbnail_image
-                    ? `${import.meta.env.VITE_API_URL}/${project.thumbnail_image}`
+                    ? project.thumbnail_image.startsWith("http")
+                      ? project.thumbnail_image
+                      : `${import.meta.env.VITE_API_URL}/${project.thumbnail_image}`
                     : thumbnailPlaceholder
                 }
                 alt={

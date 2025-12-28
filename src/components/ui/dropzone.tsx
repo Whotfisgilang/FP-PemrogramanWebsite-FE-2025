@@ -135,17 +135,23 @@ export default function Dropzone({
         {preview && !file && (
           <div className="flex items-center gap-3 p-2 border rounded-md mt-2">
             <div
-              className="size-16 rounded-md overflow-hidden cursor-pointer"
+              className="size-16 rounded-md overflow-hidden cursor-pointer bg-slate-100 flex items-center justify-center"
               onClick={() => setLightboxOpen(true)}
             >
               <img
                 src={preview}
                 alt="Preview"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "https://placehold.co/100x100?text=Broken+Image";
+                }}
               />
             </div>
 
-            <div className="flex-1 text-sm truncate">{preview}</div>
+            <div className="flex-1 text-sm truncate" title={preview}>
+              {preview.split("/").pop() || "Existing Image"}
+            </div>
 
             <Button size="icon" variant="ghost" onClick={handleDelete}>
               <X className="size-4" />

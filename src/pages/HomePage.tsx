@@ -198,7 +198,9 @@ export default function HomePage() {
           <img
             src={
               game.thumbnail_image
-                ? `${import.meta.env.VITE_API_URL}/${game.thumbnail_image}`
+                ? game.thumbnail_image.startsWith("http")
+                  ? game.thumbnail_image
+                  : `${import.meta.env.VITE_API_URL}/${game.thumbnail_image}`
                 : thumbnailPlaceholder
             }
             alt={game.thumbnail_image ? game.name : "Placeholder Thumbnail"}

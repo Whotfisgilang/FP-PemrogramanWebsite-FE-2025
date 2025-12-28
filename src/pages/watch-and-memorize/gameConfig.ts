@@ -1,16 +1,7 @@
 import type { GameImage } from "./types";
 
 // 🖼️ Daftar gambar lokal untuk game-mu
-export const ALL_IMAGES: GameImage[] = [
-  { id: "kucing", src: "/images/watch-and-memorize/img1.jpg", label: "Kucing" },
-  { id: "anjing", src: "/images/watch-and-memorize/img2.jpg", label: "Anjing" },
-  { id: "bunga", src: "/images/watch-and-memorize/img3.jpg", label: "Bunga" },
-  { id: "pohon", src: "/images/watch-and-memorize/img4.jpg", label: "Pohon" },
-  { id: "gunung", src: "/images/watch-and-memorize/img5.jpg", label: "Gunung" },
-  { id: "pantai", src: "/images/watch-and-memorize/img6.jpg", label: "Pantai" },
-  { id: "jalan", src: "/images/watch-and-memorize/img7.jpg", label: "Jalan" },
-  { id: "mobil", src: "/images/watch-and-memorize/img8.jpg", label: "Mobil" },
-];
+export const ALL_IMAGES: GameImage[] = [];
 
 // 🔢 Konfigurasi gameplay
 export const SHOW_COUNT = 4; // berapa gambar yang tampil di fase "show"
