@@ -59,7 +59,7 @@ function Quiz() {
       try {
         setLoading(true);
         const response = await api.get(
-          `/api/game/game-type/quiz/${id}/play/public`,
+          `/game/game-type/quiz/${id}/play/public`,
         );
         setQuiz(response.data.data);
       } catch (err) {
@@ -104,7 +104,7 @@ function Quiz() {
 
   const addPlayCount = async (gameId: string) => {
     try {
-      await api.post("/api/game/play-count", {
+      await api.post("/game/play-count", {
         game_id: gameId,
       });
     } catch (err) {
@@ -117,7 +117,7 @@ function Quiz() {
     try {
       setLoading(true);
 
-      const response = await api.post(`/api/game/game-type/quiz/${id}/check`, {
+      const response = await api.post(`/game/game-type/quiz/${id}/check`, {
         answers: finalAnswers ?? userAnswers,
       });
 
@@ -262,7 +262,7 @@ function Quiz() {
 
             {currentQ.question_image && (
               <img
-                src={`${import.meta.env.VITE_API_URL}/${currentQ.question_image}`}
+                src={`${import.meta.env.VITE_API_URL.replace(/\/api$/, "")}/${currentQ.question_image}`}
                 alt="Question"
                 className="mx-auto max-h-64 object-contain rounded-md"
               />
@@ -275,17 +275,15 @@ function Quiz() {
                   <Button
                     key={idx}
                     variant="outline"
-                    className={`w-full justify-start p-7 gap-2 transition ${
-                      isSelected ? "bg-primary text-white" : ""
-                    }`}
+                    className={`w-full justify-start p-7 gap-2 transition ${isSelected ? "bg-primary text-white" : ""
+                      }`}
                     onClick={() => setSelectedAnswer(opt.answer_index)}
                   >
                     <span
-                      className={`w-7 h-7 rounded-full flex items-center justify-center ${
-                        isSelected
-                          ? "bg-white text-primary"
-                          : "bg-gray-100 text-black"
-                      }`}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center ${isSelected
+                        ? "bg-white text-primary"
+                        : "bg-gray-100 text-black"
+                        }`}
                     >
                       {String.fromCharCode(65 + idx)}
                     </span>
@@ -295,9 +293,8 @@ function Quiz() {
               })}
             </div>
             <div
-              className={`mt-6 flex w-full ${
-                isFirstQuestion ? "justify-end" : "justify-between"
-              }`}
+              className={`mt-6 flex w-full ${isFirstQuestion ? "justify-end" : "justify-between"
+                }`}
             >
               {!isFirstQuestion && (
                 <Button

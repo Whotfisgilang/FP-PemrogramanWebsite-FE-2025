@@ -85,7 +85,7 @@ function ProfileDropdown({ user }: { user: AuthUser | null }) {
             <AvatarImage
               src={
                 user?.profile_picture
-                  ? `${import.meta.env.VITE_API_URL}/${user.profile_picture}`
+                  ? `${(import.meta.env.VITE_API_URL || "").replace(/\/api$/, "")}/${user.profile_picture}`
                   : undefined
               }
               alt="User Avatar"

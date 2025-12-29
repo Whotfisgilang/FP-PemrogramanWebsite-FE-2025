@@ -16,7 +16,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     setToken(token);
 
     api
-      .get("/api/auth/me")
+      .get("/auth/me")
       .then((res) => {
         setUser(res.data.data); // sesuaikan struktur backend
       })

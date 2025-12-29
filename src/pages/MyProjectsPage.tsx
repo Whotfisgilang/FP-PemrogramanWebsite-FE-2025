@@ -46,7 +46,7 @@ export default function MyProjectsPage() {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/api/auth/me/game");
+        const response = await api.get("/auth/me/game");
         setProjects(response.data.data);
       } catch (err) {
         setError("Failed to fetch projects. Please try again later.");
@@ -63,7 +63,7 @@ export default function MyProjectsPage() {
     projectId: string,
   ) => {
     try {
-      await api.delete(`/api/game/game-type/${projectTemplate}/${projectId}`);
+      await api.delete(`/game/game-type/${projectTemplate}/${projectId}`);
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
       toast.success("Project deleted successfully!");
     } catch (err) {
@@ -81,7 +81,7 @@ export default function MyProjectsPage() {
       const form = new FormData();
       form.append("is_publish", String(isPublish));
 
-      await api.patch(`/api/game/game-type/${projectTemplate}/${gameId}`, form);
+      await api.patch(`/game/game-type/${projectTemplate}/${gameId}`, form);
 
       setProjects((prev) =>
         prev.map((p) =>
@@ -152,7 +152,7 @@ export default function MyProjectsPage() {
                   project.thumbnail_image
                     ? project.thumbnail_image.startsWith("http")
                       ? project.thumbnail_image
-                      : `${import.meta.env.VITE_API_URL}/${project.thumbnail_image}`
+                      : `${(import.meta.env.VITE_API_URL || "").replace(/\/api$/, "")}/${project.thumbnail_image}`
                     : thumbnailPlaceholder
                 }
                 alt={

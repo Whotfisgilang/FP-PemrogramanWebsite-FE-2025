@@ -54,7 +54,7 @@ export default function RegisterPage() {
       formData.append("email", email);
       formData.append("password", password);
 
-      await api.post("/api/auth/register", formData);
+      await api.post("/auth/register", formData);
 
       navigate("/login");
     } catch (err) {

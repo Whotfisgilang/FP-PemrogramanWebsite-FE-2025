@@ -74,7 +74,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchGameTemplates = async () => {
       try {
-        const response = await api.get("/api/game/template");
+        const response = await api.get("/game/template");
         setGameTemplates(response.data.data);
       } catch (err) {
         console.error("Failed to fetch game templates:", err);
@@ -100,7 +100,7 @@ export default function HomePage() {
         if (gameTypeSlug) params.append("gameTypeSlug", gameTypeSlug);
 
         const queryString = params.toString();
-        const url = queryString ? `/api/game?${queryString}` : "/api/game";
+        const url = queryString ? `/game?${queryString}` : "/game";
 
         const response = await api.get(url);
         console.log("Fetched games data:", response.data);
@@ -160,7 +160,7 @@ export default function HomePage() {
         }),
       );
 
-      await api.post("/api/game/like", {
+      await api.post("/game/like", {
         game_id: gameId,
         is_like: newIsLiked,
       });
@@ -200,7 +200,7 @@ export default function HomePage() {
               game.thumbnail_image
                 ? game.thumbnail_image.startsWith("http")
                   ? game.thumbnail_image
-                  : `${import.meta.env.VITE_API_URL}/${game.thumbnail_image}`
+                  : `${(import.meta.env.VITE_API_URL || "").replace(/\/api$/, "")}/${game.thumbnail_image}`
                 : thumbnailPlaceholder
             }
             alt={game.thumbnail_image ? game.name : "Placeholder Thumbnail"}

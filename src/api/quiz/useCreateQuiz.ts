@@ -82,7 +82,7 @@ export const useCreateQuiz = async (payload: QuizPayload) => {
 
     formData.append("questions", JSON.stringify(questionsPayload));
 
-    const res = await api.post("/api/game/game-type/quiz", formData, {
+    const res = await api.post("/game/game-type/quiz", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 

@@ -20,6 +20,7 @@ import CreatePairOrNoPair from "./pages/pair-or-no-pair/create";
 import WatchAndMemorizeGame from "./pages/watch-and-memorize/play";
 import CreateWatchAndMemorize from "./pages/watch-and-memorize/create";
 import EditWatchAndMemorize from "./pages/watch-and-memorize/edit";
+import React from "react";
 
 function App() {
   return (

@@ -36,6 +36,8 @@ function CreateWatchAndMemorize() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
+
+  // Strict: Always 9 slots, initially null. User MUST fill all with Files.
   const [gameImages, setGameImages] = useState<(File | null)[]>(Array(9).fill(null));
 
   const [questions, setQuestions] = useState<Question[]>([
@@ -90,16 +92,15 @@ function CreateWatchAndMemorize() {
       return;
     }
 
-    // STRICT VALIDATION: Check for exactly 9 non-null files
-    const validFiles = gameImages.filter((img): img is File => img instanceof File);
-
-    if (validFiles.length !== 9) {
-      toast.error(`You must upload exactly 9 images. Currently have ${validFiles.length}.`);
+    if (!name.trim() || name.length < 3) {
+      toast.error("Game name must be at least 3 characters");
       return;
     }
 
-    if (!name.trim() || name.length < 3) {
-      toast.error("Game name must be at least 3 characters");
+    // STRICT VALIDATION: Ensure exactly 9 real Files
+    const validFiles = gameImages.filter((img): img is File => img instanceof File);
+    if (validFiles.length !== 9) {
+      toast.error("You must upload exactly 9 images to create the game.");
       return;
     }
 
@@ -120,7 +121,7 @@ function CreateWatchAndMemorize() {
       // Files
       formData.append('thumbnail_image', thumbnail);
 
-      // Append files in strict order
+      // STRICT: Append exactly 9 files with valid names (browser does this automatically for File objects)
       validFiles.forEach((file) => {
         formData.append('files_to_upload', file);
       });
@@ -236,7 +237,7 @@ function CreateWatchAndMemorize() {
                     onChange={(file) => {
                       setGameImages(prev => {
                         const newImages = [...prev];
-                        newImages[index] = file || null; // Explicitly set null if file removed
+                        newImages[index] = file || null;
                         return newImages;
                       });
                     }}

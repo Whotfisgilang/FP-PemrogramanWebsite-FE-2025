@@ -34,13 +34,17 @@ function EditWatchAndMemorize() {
     const { id } = useParams();
 
     const [isLoading, setIsLoading] = useState(true);
-    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+
+    // Thumbnail: Can be string (existing) or File (new)
     const [thumbnail, setThumbnail] = useState<File | string | null>(null);
-    // Store Files or URL strings
-    const [gameImages, setGameImages] = useState<(File | string | null)[]>(Array(9).fill(null));
+
+    // Image State Split
+    const [existingImages, setExistingImages] = useState<(string | null)[]>(Array(9).fill(null));
+    const [newImages, setNewImages] = useState<(File | null)[]>(Array(9).fill(null));
+    const [isReplacingImages, setIsReplacingImages] = useState(false);
 
     const [questions, setQuestions] = useState<Question[]>([
         {
@@ -62,7 +66,7 @@ function EditWatchAndMemorize() {
         if (!id) return;
         const fetchData = async () => {
             try {
-                const res = await api.get(`/api/game/game-type/watch-and-memorize/${id}`);
+                const res = await api.get(`/game/game-type/watch-and-memorize/${id}`);
                 const data = res.data.data;
 
                 setName(data.name || "");
@@ -74,7 +78,7 @@ function EditWatchAndMemorize() {
                         setThumbnail(thumbUrl);
                     } else {
                         const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
-                        const cleanBase = baseUrl.replace(/\/+$/, "");
+                        const cleanBase = baseUrl.replace(/\/api$/, "").replace(/\/+$/, "");
                         const cleanPath = thumbUrl.replace(/^\/+/, "");
                         setThumbnail(`${cleanBase}/${cleanPath}`);
                     }
@@ -100,34 +104,33 @@ function EditWatchAndMemorize() {
                             if (url.startsWith("http") || url.startsWith("data:")) return url;
 
                             const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
-                            const cleanBase = baseUrl.replace(/\/+$/, "");
+                            const cleanBase = baseUrl.replace(/\/api$/, "").replace(/\/+$/, "");
                             const cleanPath = url.replace(/^\/+/, "");
                             return `${cleanBase}/${cleanPath}`;
                         });
                         // Ensure exactly 9 slots
                         const filledImages = [...loadedImages];
                         while (filledImages.length < 9) filledImages.push(null);
-                        setGameImages(filledImages);
+                        setExistingImages(filledImages);
+                    }
 
-                        // Questions
-                        // Map Backend IDs (e.g. img-001) to Indexes (0)
-                        if (Array.isArray(json.questions)) {
-                            const mappedQuestions = json.questions.map((q: any) => {
-                                const getIndex = (imgId: string) => {
-                                    // Backend stores IDs like 'img-001', 'img-002'.
-                                    // We find the index in json.images where id matches
-                                    const idx = json.images.findIndex((im: any) => im.id === imgId);
-                                    return idx >= 0 ? idx : 0;
-                                };
+                    // Questions
+                    if (Array.isArray(json.questions)) {
+                        const mappedQuestions = json.questions.map((q: any) => {
+                            const getIndex = (imgId: string) => {
+                                // Backend stores IDs like 'img-001', 'img-002'.
+                                // We find the index in json.images where id matches
+                                const idx = json.images.findIndex((im: any) => im.id === imgId);
+                                return idx >= 0 ? idx : 0;
+                            };
 
-                                return {
-                                    shown_image_array_indexes: q.shown_image_ids?.map((id: string) => getIndex(id)) || [],
-                                    grid_image_array_indexes: q.grid_image_ids?.map((id: string) => getIndex(id)) || [],
-                                    time_to_show_ms: q.time_to_show_ms || 3000
-                                };
-                            });
-                            setQuestions(mappedQuestions);
-                        }
+                            return {
+                                shown_image_array_indexes: q.shown_image_ids?.map((id: string) => getIndex(id)) || [],
+                                grid_image_array_indexes: q.grid_image_ids?.map((id: string) => getIndex(id)) || [],
+                                time_to_show_ms: q.time_to_show_ms || 3000
+                            };
+                        });
+                        setQuestions(mappedQuestions);
                     }
                 }
             } catch (err) {
@@ -162,14 +165,13 @@ function EditWatchAndMemorize() {
     };
 
     const handleShownImagesChange = (qIndex: number, value: string) => {
-        const indexes = value.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i >= 0 && i < gameImages.length);
+        const indexes = value.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i >= 0 && i < 9);
         if (indexes.length === 3) {
             updateQuestion(qIndex, 'shown_image_array_indexes', indexes);
         }
     };
 
     const handleSubmit = async (publish = false) => {
-        setFormErrors({});
 
         if (!thumbnail) {
             toast.error("Thumbnail is required");
@@ -181,43 +183,19 @@ function EditWatchAndMemorize() {
             return;
         }
 
-        // Check for mixed content
-        // If ANY image is a File, we must send ALL as Files because backend Replaces All.
-        // We try to convert existing URLs to Blobs if possible.
-        const hasAnyNewFile = gameImages.some(img => img instanceof File);
-        const hasAnyExistingUrl = gameImages.some(img => typeof img === 'string');
+        // Logic check:
+        // If isReplacingImages is TRUE, we must have 9 valid Files in newImages.
+        // If FALSE, we send NO images (backend keeps existing).
 
         let finalFiles: File[] = [];
 
-        if (hasAnyNewFile) {
-            // Prepare to re-upload everything
-            const processingToast = toast.loading("Processing images...");
-            try {
-                const filePromises = gameImages.map(async (img, idx) => {
-                    if (img instanceof File) return img;
-                    if (typeof img === 'string') {
-                        // Fetch blob from URL
-                        try {
-                            const response = await fetch(img);
-                            const blob = await response.blob();
-                            // Ensure filename is never undefined
-                            const filename = `existing-image-${idx + 1}.png`;
-                            return new File([blob], filename, { type: blob.type });
-                        } catch (e) {
-                            console.error("Failed to fetch existing image:", img);
-                            throw new Error(`Failed to process existing image #${idx + 1}`);
-                        }
-                    }
-                    throw new Error(`Image #${idx + 1} is missing`);
-                });
-
-                finalFiles = await Promise.all(filePromises);
-                toast.dismiss(processingToast);
-            } catch (e: any) {
-                toast.dismiss(processingToast);
-                toast.error(e.message || "Failed to process images. Please re-upload all images.");
+        if (isReplacingImages) {
+            const validFiles = newImages.filter((img): img is File => img instanceof File);
+            if (validFiles.length !== 9) {
+                toast.error("You selected to replace images. You must upload exactly 9 new images.");
                 return;
             }
+            finalFiles = validFiles;
         }
 
         try {
@@ -239,7 +217,8 @@ function EditWatchAndMemorize() {
                 formData.append('thumbnail_image', thumbnail);
             }
 
-            if (finalFiles.length > 0) {
+            // Only append files if we are properly replacing them
+            if (isReplacingImages && finalFiles.length === 9) {
                 finalFiles.forEach((file) => {
                     formData.append('files_to_upload', file);
                 });
@@ -248,7 +227,7 @@ function EditWatchAndMemorize() {
             // Questions as JSON
             formData.append('questions', JSON.stringify(questions));
 
-            await api.patch(`/api/game/game-type/watch-and-memorize/${id}`, formData);
+            await api.patch(`/game/game-type/watch-and-memorize/${id}`, formData);
 
             toast.success("Watch and Memorize game updated successfully!");
             navigate("/my-projects");
@@ -327,37 +306,73 @@ function EditWatchAndMemorize() {
 
                     {/* Game Images */}
                     <div className="bg-white w-full h-full p-6 space-y-6 rounded-xl border">
-                        <div>
-                            <Typography variant="h4">Game Images</Typography>
-                            <Typography variant="small" className="text-slate-500">
-                                Update images. Note: Changing any image might require re-uploading others if fetch fails.
-                            </Typography>
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <Typography variant="h4">Game Images</Typography>
+                                <Typography variant="small" className="text-slate-500">
+                                    {isReplacingImages
+                                        ? "Upload exactly 9 new images."
+                                        : "Showing existing images. Click 'Replace Images' to upload new ones."}
+                                </Typography>
+                            </div>
+                            <Button
+                                size="sm"
+                                variant={isReplacingImages ? "ghost" : "outline"}
+                                onClick={() => {
+                                    setIsReplacingImages(!isReplacingImages);
+                                    // Reset new images if cancelling
+                                    if (isReplacingImages) {
+                                        setNewImages(Array(9).fill(null));
+                                    }
+                                }}
+                            >
+                                {isReplacingImages ? "Cancel & Keep Existing" : "Replace Images"}
+                            </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {Array.from({ length: 9 }, (_, index) => (
-                                <div key={index}>
-                                    <Dropzone
-                                        required
-                                        label={`Image ${index + 1}`}
-                                        allowedTypes={["image/png", "image/jpeg"]}
-                                        maxSize={2 * 1024 * 1024}
-                                        defaultValue={gameImages[index] || undefined}
-                                        onChange={(file) => {
-                                            setGameImages(prev => {
-                                                const newImages = [...prev];
-                                                if (file) {
-                                                    newImages[index] = file;
-                                                } else {
-                                                    newImages[index] = null;
-                                                }
-                                                return newImages;
-                                            });
-                                        }}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                        {!isReplacingImages ? (
+                            // View Mode (Existing Images)
+                            <div className="grid grid-cols-3 gap-4 mt-4">
+                                {existingImages.map((imgUrl, index) => (
+                                    <div key={index} className="relative aspect-square bg-slate-100 rounded-lg overflow-hidden border">
+                                        {imgUrl ? (
+                                            <>
+                                                <img src={imgUrl} alt={`Game Image ${index + 1}`} className="w-full h-full object-cover" />
+                                                <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                                    #{index}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex items-center justify-center w-full h-full text-slate-400 text-sm">
+                                                No Image
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            // Edit Mode (New Images)
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                {Array.from({ length: 9 }, (_, index) => (
+                                    <div key={index}>
+                                        <Dropzone
+                                            required
+                                            label={`New Image ${index + 1}`}
+                                            allowedTypes={["image/png", "image/jpeg"]}
+                                            maxSize={2 * 1024 * 1024}
+                                            defaultValue={newImages[index] || undefined}
+                                            onChange={(file) => {
+                                                setNewImages(prev => {
+                                                    const updated = [...prev];
+                                                    updated[index] = file || null; // Explicitly set null
+                                                    return updated;
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Questions */}
@@ -400,7 +415,7 @@ function EditWatchAndMemorize() {
                                         placeholder="0, 1, 2, 3, 4, 5, 6, 7, 8"
                                         value={q.grid_image_array_indexes.join(', ')}
                                         onChange={(e) => {
-                                            const indexes = e.target.value.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i >= 0 && i < gameImages.length);
+                                            const indexes = e.target.value.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i) && i >= 0 && i < 9);
                                             if (indexes.length === 9) {
                                                 updateQuestion(qIndex, 'grid_image_array_indexes', indexes);
                                             }

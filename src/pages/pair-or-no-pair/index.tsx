@@ -172,7 +172,7 @@ const useSoundEffects = (isSoundOn: boolean) => {
     introAudioRef.current!.currentTime = 0;
     winAudioRef.current?.pause();
     winAudioRef.current!.currentTime = 0;
-    gameAudioRef.current?.play().catch(() => {});
+    gameAudioRef.current?.play().catch(() => { });
   };
 
   const playWin = () => {
@@ -590,11 +590,10 @@ const IntroScreen = ({
               e.stopPropagation();
               onDifficultyChange("easy");
             }}
-            className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${
-              selectedDifficulty === "easy"
-                ? "bg-green-500 text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-            }`}
+            className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${selectedDifficulty === "easy"
+              ? "bg-green-500 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+              }`}
           >
             Easy
           </button>
@@ -603,11 +602,10 @@ const IntroScreen = ({
               e.stopPropagation();
               onDifficultyChange("normal");
             }}
-            className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${
-              selectedDifficulty === "normal"
-                ? "bg-blue-500 text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-            }`}
+            className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${selectedDifficulty === "normal"
+              ? "bg-blue-500 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+              }`}
           >
             Normal
           </button>
@@ -616,11 +614,10 @@ const IntroScreen = ({
               e.stopPropagation();
               onDifficultyChange("hard");
             }}
-            className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${
-              selectedDifficulty === "hard"
-                ? "bg-red-500 text-white shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-            }`}
+            className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${selectedDifficulty === "hard"
+              ? "bg-red-500 text-white shadow-lg"
+              : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+              }`}
           >
             Hard
           </button>
@@ -787,7 +784,7 @@ const PairOrNoPairGame = () => {
       try {
         console.log("[DEBUG] Fetching game data...");
         const response = await fetch(
-          `${API_URL}/api/game/game-type/pair-or-no-pair/${gameId}/play/public`,
+          `${API_URL}/game/game-type/pair-or-no-pair/${gameId}/play/public`,
         );
         const result = await response.json();
         console.log("[DEBUG] API Response:", result);
@@ -1141,7 +1138,7 @@ const PairOrNoPairGame = () => {
     // Sound is handled by useEffect on gameState change
     try {
       // Update play count
-      await fetch(`${API_URL}/api/game/play-count`, {
+      await fetch(`${API_URL}/game/play-count`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ game_id: gameId }),
@@ -1149,7 +1146,7 @@ const PairOrNoPairGame = () => {
 
       // Submit score to leaderboard
       const response = await fetch(
-        `${API_URL}/api/game/game-type/pair-or-no-pair/${gameId}/evaluate`,
+        `${API_URL}/game/game-type/pair-or-no-pair/${gameId}/evaluate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1170,7 +1167,7 @@ const PairOrNoPairGame = () => {
 
       // Fetch leaderboard list
       const lbResponse = await fetch(
-        `${API_URL}/api/game/game-type/pair-or-no-pair/${gameId}/leaderboard?difficulty=${difficulty}`,
+        `${API_URL}/game/game-type/pair-or-no-pair/${gameId}/leaderboard?difficulty=${difficulty}`,
       );
       if (lbResponse.ok) {
         const lbData = await lbResponse.json();
@@ -1570,23 +1567,21 @@ const PairOrNoPairGame = () => {
                 {leaderboardList.map((entry) => (
                   <div
                     key={entry.rank}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg ${
-                      entry.rank === leaderboardRank
-                        ? "bg-yellow-500/20 border border-yellow-500/50"
-                        : "bg-slate-800/50"
-                    }`}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg ${entry.rank === leaderboardRank
+                      ? "bg-yellow-500/20 border border-yellow-500/50"
+                      : "bg-slate-800/50"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <span
-                        className={`w-8 h-8 flex items-center justify-center rounded-full font-bold ${
-                          entry.rank === 1
-                            ? "bg-yellow-500 text-black"
-                            : entry.rank === 2
-                              ? "bg-slate-400 text-black"
-                              : entry.rank === 3
-                                ? "bg-amber-600 text-white"
-                                : "bg-slate-700 text-slate-300"
-                        }`}
+                        className={`w-8 h-8 flex items-center justify-center rounded-full font-bold ${entry.rank === 1
+                          ? "bg-yellow-500 text-black"
+                          : entry.rank === 2
+                            ? "bg-slate-400 text-black"
+                            : entry.rank === 3
+                              ? "bg-amber-600 text-white"
+                              : "bg-slate-700 text-slate-300"
+                          }`}
                       >
                         {entry.rank}
                       </span>

@@ -1,38 +1,21 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-=======
 import toast from "react-hot-toast";
 import { Pause, Play, LogOut } from "lucide-react";
->>>>>>> c2b3613 (rombak cak)
 
 import Card from "@/components/ui/watch-and-memorize/card";
 import Button from "@/components/ui/watch-and-memorize/button";
 import Progress from "@/components/ui/watch-and-memorize/progress";
 
 import {
-<<<<<<< HEAD
-  ALL_IMAGES,
-=======
->>>>>>> c2b3613 (rombak cak)
   SHOW_COUNT,
   SHOW_DURATION_MS,
   TOTAL_TIME_SEC,
 } from "@/pages/watch-and-memorize/gameConfig";
 import type { GameImage, GamePhase } from "@/pages/watch-and-memorize/types";
 import { prepareRoundImages } from "@/pages/watch-and-memorize/logic";
-<<<<<<< HEAD
-import { updateGamePlayCount } from "@/api/watchAndMemorizeApi";
-import { toast } from "sonner";
-
-const WatchAndMemorizeGame = () => {
-  const { gameId } = useParams<{ gameId: string }>();
-  const navigate = useNavigate();
-  
-=======
 import api from "@/api/axios";
 
-// Helper to resolve image URL
 // Helper to resolve image URL
 const getImageUrl = (path: string) => {
   if (!path) return "";
@@ -42,7 +25,8 @@ const getImageUrl = (path: string) => {
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
   // Normalize slashes
-  const cleanBase = baseUrl.replace(/\/+$/, "");
+  // Remove /api from base url for static content if present
+  const cleanBase = baseUrl.replace(/\/api\/?$/, "").replace(/\/+$/, "");
   const cleanPath = path.replace(/^\/+/, "");
 
   return `${cleanBase}/${cleanPath}`;
@@ -52,7 +36,6 @@ const WatchAndMemorizeGame = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
 
->>>>>>> c2b3613 (rombak cak)
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [round, setRound] = useState<number>(1);
   const [score, setScore] = useState<number>(0);
@@ -68,12 +51,9 @@ const WatchAndMemorizeGame = () => {
 
   const [correct, setCorrect] = useState<number>(0);
   const [wrong, setWrong] = useState<number>(0);
-  
-  const [gameStartTime, setGameStartTime] = useState<number>(0);
-  const [playCountSent, setPlayCountSent] = useState<boolean>(false);
 
-<<<<<<< HEAD
-=======
+
+
   // Fetch Game Data if projectId exists
   useEffect(() => {
     if (projectId) {
@@ -81,12 +61,12 @@ const WatchAndMemorizeGame = () => {
         try {
           setLoading(true);
           // Assuming the endpoint returns { data: { game_json: { images: [] } } } or similar
-          const response = await api.get(`/api/game/game-type/watch-and-memorize/${projectId}/play/public`);
+          const response = await api.get(`/game/game-type/watch-and-memorize/${projectId}/play/public`);
           const data = response.data.data;
           console.log("WatchAndMemorize DEBUG: API Response", data);
 
-          // Check for game_json (standard) or fallback to game_data
-          const gameContent = data.game_json || data.game_data;
+          // Check for game_json (standard) or fallback to game_data, or use data directly
+          const gameContent = data.game_json || data.game_data || data;
           console.log("WatchAndMemorize DEBUG: Game Content", gameContent);
 
           if (gameContent && gameContent.images && Array.isArray(gameContent.images)) {
@@ -112,7 +92,6 @@ const WatchAndMemorizeGame = () => {
   }, [projectId]);
 
   // Mulai satu ronde baru
->>>>>>> c2b3613 (rombak cak)
   const startRound = () => {
     if (gameImages.length < SHOW_COUNT) {
       console.warn(`WatchAndMemorize DEBUG: Only ${gameImages.length} images found. Need ${SHOW_COUNT}.`);
@@ -142,17 +121,13 @@ const WatchAndMemorizeGame = () => {
     setScore(0);
     setTimeLeft(TOTAL_TIME_SEC);
     setIsPaused(false);
-    setGameStartTime(Date.now());
-    
+
+
     startRound();
   };
 
   useEffect(() => {
-<<<<<<< HEAD
-    if (phase === "idle" || isPaused || phase === "result") return;
-=======
     if (phase === "idle" || phase === "result" || isPaused) return;
->>>>>>> c2b3613 (rombak cak)
 
     const id = window.setInterval(() => {
       setTimeLeft((prev) => {
@@ -213,116 +188,13 @@ const WatchAndMemorizeGame = () => {
   const togglePause = () => {
     if (phase === "idle" || phase === "result") return;
     setIsPaused((prev) => !prev);
-<<<<<<< HEAD
-    
-    if (!isPaused) {
-      toast.info("Game paused");
-    } else {
-      toast.info("Game resumed");
-    }
-  };
-
-  const exitGame = async () => {
-    if (gameId && !playCountSent) {
-      try {
-        await updateGamePlayCount(gameId);
-        setPlayCountSent(true);
-        toast.success("Game session recorded!");
-      } catch (error) {
-        console.error("Failed to update play count:", error);
-      }
-    }
-    
-    navigate("/");
-  };
-
-  useEffect(() => {
-    if (phase === "show" && gameId && !playCountSent && gameStartTime > 0) {
-      updateGamePlayCount(gameId)
-        .then(() => setPlayCountSent(true))
-        .catch((error) => console.error("Failed to update play count:", error));
-    }
-  }, [phase, gameId, playCountSent, gameStartTime]);
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col items-center py-8">
-      <div className="w-full max-w-4xl flex items-center justify-between px-4 mb-4">
-        <div>
-          <h1 className="text-2xl font-bold">Watch &amp; Memorize</h1>
-          <p className="text-sm text-slate-400">
-            Round {round} • Score {score}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-40">
-            <Progress value={timeProgress} />
-            <p className="text-xs text-slate-400 text-right mt-1">
-              {timeLeft}s
-            </p>
-          </div>
-          
-          <Button 
-            variant="outline" 
-            onClick={togglePause}
-            disabled={phase === "idle" || phase === "result"}
-          >
-            {isPaused ? "Resume" : "Pause"}
-          </Button>
-          
-          <Button variant="destructive" onClick={exitGame}>
-            Exit
-          </Button>
-        </div>
-      </div>
-
-      {isPaused && phase !== "idle" && phase !== "result" && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="p-6 text-center">
-            <h2 className="text-xl font-semibold mb-4">Game Paused</h2>
-            <Button onClick={togglePause}>Resume Game</Button>
-          </Card>
-        </div>
-      )}
-
-      <Card className="w-full max-w-4xl">
-        {phase === "idle" && (
-          <div className="flex flex-col items-center gap-4 p-6 text-center">
-            <h2 className="text-xl font-semibold">Cara Bermain</h2>
-            <p className="text-sm text-slate-300">
-              Lihat dan hafalkan gambar yang muncul, lalu pilih kembali gambar
-              yang tadi kamu lihat. Cepat dan tepat dapat skor lebih tinggi.
-            </p>
-            <Button onClick={startGame}>Start Game</Button>
-          </div>
-        )}
-
-        {phase === "show" && (
-          <div className="p-6">
-            <h2 className="text-lg font-semibold mb-4 text-center">
-              Hafalkan gambar berikut!
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {targets.map((img) => (
-                <div
-                  key={img.id}
-                  className="rounded-xl overflow-hidden border border-slate-700"
-                >
-                  <img
-                    src={img.src}
-                    alt={img.label}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-=======
   };
 
   const exitGame = async () => {
     try {
       if (projectId) {
         // Using the new play-count endpoint from Quiz.tsx reference
-        await api.post("/api/game/play-count", {
+        await api.post("/game/play-count", {
           game_id: projectId,
         });
       }
@@ -364,7 +236,6 @@ const WatchAndMemorizeGame = () => {
               <span className="px-2 py-0.5 rounded bg-slate-800/80 border border-slate-700">
                 Score <span className="text-yellow-400 font-bold">{score}</span>
               </span>
->>>>>>> c2b3613 (rombak cak)
             </div>
           </div>
 
@@ -454,19 +325,8 @@ const WatchAndMemorizeGame = () => {
                 {targets.map((img, idx) => (
                   <div
                     key={img.id}
-<<<<<<< HEAD
-                    type="button"
-                    onClick={() => toggleSelect(img.id)}
-                    disabled={isPaused}
-                    className={`rounded-xl border overflow-hidden transition ${
-                      sel
-                        ? "border-emerald-400 ring-2 ring-emerald-500"
-                        : "border-slate-700 hover:border-slate-500"
-                    } ${isPaused ? "opacity-50 cursor-not-allowed" : ""}`}
-=======
                     className="relative group w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-600/50 shadow-2xl animate-in zoom-in duration-500"
                     style={{ animationDelay: `${idx * 150}ms`, animationFillMode: "both" }}
->>>>>>> c2b3613 (rombak cak)
                   >
                     <img
                       src={img.src}
@@ -482,14 +342,6 @@ const WatchAndMemorizeGame = () => {
             </div>
           )}
 
-<<<<<<< HEAD
-            <div className="mt-4 flex gap-3">
-              {timeLeft > 0 && (
-                <Button onClick={nextRound}>Next Round</Button>
-              )}
-              <Button variant="outline" onClick={exitGame}>
-                Kembali ke Home
-=======
           {/* Phase: Select */}
           {phase === "select" && (
             <div className="p-8 flex flex-col h-full">
@@ -581,7 +433,6 @@ const WatchAndMemorizeGame = () => {
               </div>
               <Button variant="outline" onClick={exitGame} className="mt-4 w-full max-w-md border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 hover:bg-slate-800/50">
                 Kembali ke Menu Utama
->>>>>>> c2b3613 (rombak cak)
               </Button>
             </div>
           )}

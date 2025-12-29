@@ -94,7 +94,7 @@ function EditQuiz() {
     const fetchQuiz = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/api/game/game-type/quiz/${id}`);
+        const res = await api.get(`/game/game-type/quiz/${id}`);
         const data = res.data.data;
 
         setTitle(data.name || "");
@@ -132,12 +132,12 @@ function EditQuiz() {
           normalized.length
             ? normalized
             : [
-                {
-                  questionText: "",
-                  questionImages: null,
-                  answers: Array(4).fill({ text: "", isCorrect: false }),
-                },
-              ],
+              {
+                questionText: "",
+                questionImages: null,
+                answers: Array(4).fill({ text: "", isCorrect: false }),
+              },
+            ],
         );
 
         setSettings({
@@ -346,7 +346,7 @@ function EditQuiz() {
 
     try {
       setLoading(true);
-      await api.patch(`/api/game/game-type/quiz/${id}`, formData, {
+      await api.patch(`/game/game-type/quiz/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Quiz updated successfully!");

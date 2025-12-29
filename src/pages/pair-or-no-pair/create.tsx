@@ -92,7 +92,7 @@ function CreatePairOrNoPair() {
     );
 
     try {
-      await api.post("/api/game/game-type/pair-or-no-pair", formData, {
+      await api.post("/game/game-type/pair-or-no-pair", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Game created successfully!");
@@ -179,11 +179,10 @@ function CreatePairOrNoPair() {
                 <Typography variant="p">Pair {index + 1}</Typography>
                 <Trash2
                   size={20}
-                  className={`${
-                    items.length <= 2
+                  className={`${items.length <= 2
                       ? "text-gray-300 cursor-not-allowed"
                       : "text-red-500 cursor-pointer"
-                  }`}
+                    }`}
                   onClick={() => removeItem(index)}
                 />
               </div>

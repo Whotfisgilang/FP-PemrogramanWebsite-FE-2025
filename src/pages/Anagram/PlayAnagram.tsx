@@ -143,7 +143,7 @@ const PlayAnagram = () => {
       setError(null);
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/game/game-type/anagram/${id}/play/public`,
+          `${API_BASE_URL}/game/game-type/anagram/${id}/play/public`,
           {
             method: "GET",
             headers: {
@@ -458,9 +458,9 @@ const PlayAnagram = () => {
               (l: { letter: string; used: boolean }) =>
                 l.letter === letterToRemove && l.used,
             ).length ===
-            answerSlots
-              .slice(0, slotIndex + 1)
-              .filter((s: string | null) => s === letterToRemove).length,
+          answerSlots
+            .slice(0, slotIndex + 1)
+            .filter((s: string | null) => s === letterToRemove).length,
       );
 
       if (letterIndex !== -1) {
@@ -649,7 +649,7 @@ const PlayAnagram = () => {
 
     // POST request to increment play count
     try {
-      await fetch(`${API_BASE_URL}/api/game/play-count`, {
+      await fetch(`${API_BASE_URL}/game/play-count`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -877,11 +877,10 @@ const PlayAnagram = () => {
               hintsUsed >= maxHints ||
               answeredQuestions.has(currentQuestion.question_id)
             }
-            className={`flex items-center gap-2 transition-all ${
-              hintsUsed >= maxHints
-                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                : "bg-amber-100 text-amber-600 hover:bg-amber-200 border border-amber-300"
-            }`}
+            className={`flex items-center gap-2 transition-all ${hintsUsed >= maxHints
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+              : "bg-amber-100 text-amber-600 hover:bg-amber-200 border border-amber-300"
+              }`}
           >
             <Lightbulb
               className={`w-4 h-4 ${hintsUsed < maxHints ? "fill-amber-500" : ""}`}
@@ -911,17 +910,16 @@ const PlayAnagram = () => {
                     <div
                       key={`slot-${i}`}
                       onClick={() => handleSlotClick(i)}
-                      className={`relative w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl transition-all ${
-                        i === errorSlotIndex && showError
-                          ? "border-red-500 bg-red-100 animate-shake cursor-not-allowed"
-                          : letter
-                            ? showWrong
-                              ? "bg-red-500 text-white shadow-md"
-                              : showCorrect
-                                ? "bg-green-500 text-white shadow-md"
-                                : "bg-blue-500 text-white shadow-md hover:bg-blue-600 cursor-pointer"
-                            : "border-4 border-dashed border-slate-300 bg-white hover:bg-slate-50 cursor-pointer"
-                      }`}
+                      className={`relative w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl transition-all ${i === errorSlotIndex && showError
+                        ? "border-red-500 bg-red-100 animate-shake cursor-not-allowed"
+                        : letter
+                          ? showWrong
+                            ? "bg-red-500 text-white shadow-md"
+                            : showCorrect
+                              ? "bg-green-500 text-white shadow-md"
+                              : "bg-blue-500 text-white shadow-md hover:bg-blue-600 cursor-pointer"
+                          : "border-4 border-dashed border-slate-300 bg-white hover:bg-slate-50 cursor-pointer"
+                        }`}
                     >
                       {/* X ICON KALO SALAH PENCET */}
                       {i === errorSlotIndex && showError ? (
@@ -970,11 +968,10 @@ const PlayAnagram = () => {
                           disabled={
                             item.used || isChecking || showWrong || showCorrect
                           }
-                          className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl shadow-lg transition-all ${
-                            item.used || showWrong || showCorrect
-                              ? "bg-slate-300 text-slate-400 cursor-not-allowed opacity-50"
-                              : "bg-slate-700 text-white hover:bg-slate-800 hover:scale-110 cursor-pointer active:scale-95"
-                          }`}
+                          className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl shadow-lg transition-all ${item.used || showWrong || showCorrect
+                            ? "bg-slate-300 text-slate-400 cursor-not-allowed opacity-50"
+                            : "bg-slate-700 text-white hover:bg-slate-800 hover:scale-110 cursor-pointer active:scale-95"
+                            }`}
                         >
                           {item.letter}
                         </button>

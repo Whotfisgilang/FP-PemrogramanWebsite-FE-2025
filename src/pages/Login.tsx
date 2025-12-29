@@ -43,7 +43,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await api.post("/api/auth/login", {
+      const response = await api.post("/auth/login", {
         email,
         password,
       });
@@ -56,7 +56,7 @@ export default function LoginPage() {
 
       setToken(token);
 
-      const me = await api.get("/api/auth/me");
+      const me = await api.get("/auth/me");
       setUser(me.data.data);
 
       navigate("/profile");
