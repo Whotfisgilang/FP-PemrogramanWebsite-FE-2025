@@ -30,6 +30,7 @@ const getIconComponent = (
     string,
     React.ComponentType<{ className?: string }>
   >;
+
   const IconComponent = icons[pascalCase];
 
   return IconComponent || LucideIcons.HelpCircle;
@@ -47,9 +48,8 @@ export default function CreateProject() {
         setLoading(true);
         const response = await api.get("/game/template");
         setTemplates(response.data.data);
-      } catch (err) {
+      } catch {
         setError("Failed to fetch game templates. Please try again later.");
-        console.error("Failed to fetch templates:", err);
       } finally {
         setLoading(false);
       }
@@ -118,7 +118,6 @@ export default function CreateProject() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {templates.map((template) => {
               const IconComponent = getIconComponent(template.logo);
-
               return (
                 <Card
                   key={template.id}

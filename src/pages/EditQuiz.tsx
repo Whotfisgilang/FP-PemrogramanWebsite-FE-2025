@@ -132,12 +132,12 @@ function EditQuiz() {
           normalized.length
             ? normalized
             : [
-              {
-                questionText: "",
-                questionImages: null,
-                answers: Array(4).fill({ text: "", isCorrect: false }),
-              },
-            ],
+                {
+                  questionText: "",
+                  questionImages: null,
+                  answers: Array(4).fill({ text: "", isCorrect: false }),
+                },
+              ],
         );
 
         setSettings({
@@ -146,8 +146,7 @@ function EditQuiz() {
           isAnswerRandomized: !!data.game_json?.is_answer_randomized,
           scorePerQuestion: Number(data.game_json?.score_per_question ?? 1),
         });
-      } catch (err) {
-        console.error(err);
+      } catch {
         toast.error("Failed to load quiz data");
       } finally {
         setLoading(false);
@@ -351,8 +350,7 @@ function EditQuiz() {
       });
       toast.success("Quiz updated successfully!");
       navigate("/my-projects");
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to update quiz");
     } finally {
       setLoading(false);

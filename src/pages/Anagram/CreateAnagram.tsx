@@ -14,7 +14,6 @@ import {
   Image as ImageIcon,
   Upload,
 } from "lucide-react";
-import api from "@/api/axios";
 
 interface QuestionItem {
   id: number;
@@ -106,14 +105,15 @@ const CreateAnagram = () => {
     alertDiv.innerHTML = `
       <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center shadow-2xl animate-in fade-in zoom-in duration-300">
         <div class="w-16 h-16 ${type === "error" ? "bg-red-100" : "bg-blue-100"} rounded-full flex items-center justify-center mx-auto mb-4">
-          ${type === "error"
-        ? `<svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          ${
+            type === "error"
+              ? `<svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>`
-        : `<svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              : `<svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>`
-      }
+          }
         </div>
         <h3 class="text-xl font-bold text-slate-900 mb-2">${type === "error" ? "Oops!" : "Info"}</h3>
         <p class="text-slate-600 mb-6">${message}</p>
@@ -202,17 +202,16 @@ const CreateAnagram = () => {
       console.log("=== SENDING TO BACKEND ===");
 
       // BACKEND FETCH
-      const response = await api.post(
-        "/game/game-type/anagram",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
 
-      const result = response.data;
+      const baseURL = import.meta.env.VITE_API_URL;
+
+      await fetch(`${baseURL}/api/game/game-type/anagram`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
       // Show success message with custom UI
       const successDiv = document.createElement("div");
@@ -423,10 +422,11 @@ const CreateAnagram = () => {
                     Game Thumbnail <span className="text-red-500">*</span>
                   </Label>
                   <div
-                    className={`aspect-video w-full border-2 rounded-md bg-slate-100 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition ${thumbnailError && !thumbnailPreview
-                      ? "border-red-500 bg-red-50"
-                      : "border-slate-200"
-                      }`}
+                    className={`aspect-video w-full border-2 rounded-md bg-slate-100 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition ${
+                      thumbnailError && !thumbnailPreview
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-200"
+                    }`}
                     onClick={() =>
                       document.getElementById("thumb-input")?.click()
                     }
